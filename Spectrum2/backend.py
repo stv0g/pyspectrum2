@@ -24,7 +24,7 @@ class SpectrumBackend:
 
 	def __init__(self):
 		self.m_pingReceived = False
-		self.m_data = bytes("")
+		self.m_data = bytes()
 		self.m_init_res = 0
 		self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -513,7 +513,7 @@ class SpectrumBackend:
 		#YourNetworkPlugin->NetworkPlugin [label="handleDisconnected()", URL="\ref NetworkPlugin::handleDisconnected()"];
 		#\endmsc
 
-		raise NotImplementedError, "Implement me"
+		raise NotImplementedError()
 
 	def handleBuddies(self, buddies):
 		pass
@@ -526,7 +526,7 @@ class SpectrumBackend:
 		@param legacyName: Legacy network name of this user used for login.
 		"""
 
-		raise NotImplementedError, "Implement me"
+		raise NotImplementedError()
 
 	def handleMessageSendRequest(self, user, legacyName, message, xhtml = "", ID = 0):
 		"""
@@ -538,7 +538,7 @@ class SpectrumBackend:
 		@param ID: message ID
 		"""
 
-		raise NotImplementedError, "Implement me"
+		raise NotImplementedError()
 
 	def handleMessageAckRequest(self, user, legacyName, ID = 0):
 		"""
@@ -548,7 +548,7 @@ class SpectrumBackend:
 		@param ID: message ID
 		"""
 
-		# raise NotImplementedError, "Implement me"
+		#raise NotImplementedError()
 		pass
 
 
