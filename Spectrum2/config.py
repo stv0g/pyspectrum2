@@ -1,3 +1,5 @@
+import os.path
+
 # I'm guessing this is the format of the spectrum config file in BNF
 # <config_file> ::= <line>*
 # <line> ::= <space>* <expr> <space>* <newline> | <space*>
@@ -19,7 +21,10 @@ class SpectrumConfig:
 		self.config_path = path_to_config_file
 		self.options = self.loadConfig(self.config_path)
 		# Load backend_logging information
-		self.options.update(self.loadConfig(self['logging.backend_config']))
+		if 'logging.backend_config' in self.options:
+			if os.path.isfile(self['logging.backend_config']):
+				logging_backend_config = self.loadConfig()
+				self.options.update(logging_backend_config)
 
 	def loadConfig(self, file_name):
 		section = {'a': ""} # Current section heading,
