@@ -1,9 +1,12 @@
-import asyncore, socket
+import asyncore
+import socket
 import logging
 import sys
 
+
 class IOChannel(asyncore.dispatcher):
-    def __init__(self, host, port, callback, closeCallback):
+
+    def __init__(self, host, port, callback, close_callback):
         asyncore.dispatcher.__init__(self)
 
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -11,17 +14,14 @@ class IOChannel(asyncore.dispatcher):
         self.logger = logging.getLogger(self.__class__.__name__)
 
         self.callback = callback
-        self.closeCallback = closeCallback
+        self.close_callback = close_callback
         self.buffer = bytes()
 
-    def sendData(self, data):
+    def send_data(self, data):
         self.buffer += data
 
     def handle_connect(self):
         pass
-
-    def handle_close(self):
-        self.close()
 
     def handle_read(self):
         data = self.recv(65536)
@@ -34,7 +34,7 @@ class IOChannel(asyncore.dispatcher):
     def handle_close(self):
         self.logger.info('Connection to backend closed, terminating.')
         self.close()
-        self.closeCallback()
+        self.close_callback()
 
     def writable(self):
         return (len(self.buffer) > 0)

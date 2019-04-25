@@ -19,57 +19,69 @@ class Config:
             path_to_config_file: The absolute path to the configuration file.
         """
         self.config_path = path_to_config_file
-        self.options = self.loadConfig(self.config_path)
+        self.options = self.load_config(self.config_path)
         
         # Load backend_logging information
         if 'logging.backend_config' in self.options:
             if os.path.isfile(self['logging.backend_config']):
-                logging_backend_config = self.loadConfig()
-                self.options.update(logging_backend_config)
+                config = self.load_config(self['logging.backend_config'])
+                self.options.update(config)
 
-    def loadConfig(self, file_name):
-        section = {'a': ""} # Current section heading,
+    def load_config(self, file_name):
+        # Current section heading,
         # It's a dictionary because variables in python closures can't be
         # assigned to.
+        section = {'a': ""}
         options = dict()
+
         # Recursive descent parser
+
         def consume_spaces(line):
             i = 0
             for c in line:
                 if c != ' ':
                     break
                 i += 1
+            
             return line[i:]
 
         def read_identifier(line):
             i = 0
             for c in line:
-                if c == ' ' or c==']' or c=='[' or c=='=':
+                if c == ' ' or c == ']' or c == '[' or c == '=':
                     break
                 i += 1
+
             # no identifier
             if i == 0:
                 return (None, 'No identifier')
+           
             return (line[:i], line[i:])
 
         def parse_section(line):
             if len(line) == 0 or line[0] != '[':
                 return (None, 'expected [')
+
             line = line[1:]
             identifier, line = read_identifier(line)
+            
             if len(line) == 0 or line[0] != ']' or identifier is None:
                 return (None, line)
+            
             return (identifier, line[1:])
 
         def parse_assignment(line):
             key, line = read_identifier(line)
             if key is None:
                 return (None, None, line)
+            
             line = consume_spaces(line)
             if len(line) == 0 or line[0] != '=':
                 return (None, None, 'Expected =')
+            
             line = consume_spaces(line[1:])
             value = line[:-1]
+            
             return (key, value, '\n')
 
         def expr(line):
@@ -85,15 +97,18 @@ class Config:
                         options[key] = value
                 else:
                     return (None, newline)
+            
             return (newline, None)
 
         def parse_line(line, line_number):
             line = consume_spaces(line)
             if line == '\n':
                 return
+            
             newline, error = expr(line)
             if newline is None:
                 raise ConfigParseError(str(line_number) + ': ' + error + ': ' + repr(line))
+            
             newline = consume_spaces(newline)
             if newline != '\n':
                 raise ConfigParseError(str(line_number) + ': Expected newline got ' + repr(newline))
@@ -104,6 +119,7 @@ class Config:
                 if c == '#' or c == '\n':
                     break
                 i += 1
+            
             return line[:i] + '\n'
 
         with open(file_name, 'r') as f:
@@ -118,6 +134,7 @@ class Config:
 
     def __getitem__(self, key):
         return self.options[key]
+
 
 class ConfigParseError(Exception):
     pass
