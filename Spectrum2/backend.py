@@ -1,12 +1,12 @@
-import protocol_pb2
 import socket
 import struct
 import sys
 import os
 import logging
 import google.protobuf
-
 import resource
+
+from . import protocol_pb2
 
 def WRAP(MESSAGE, TYPE):
 	wrap = protocol_pb2.WrapperMessage()
@@ -14,7 +14,7 @@ def WRAP(MESSAGE, TYPE):
 	wrap.payload = bytes(MESSAGE)
 	return wrap.SerializeToString()
 	
-class SpectrumBackend:
+class Backend:
 	"""
 	Creates new NetworkPlugin and connects the Spectrum2 NetworkPluginServer.
 	@param loop: Event loop.
@@ -550,7 +550,6 @@ class SpectrumBackend:
 
 		#raise NotImplementedError()
 		pass
-
 
 	def handleVCardRequest(self, user, legacyName, ID):
 		""" Called when XMPP user requests VCard of buddy.

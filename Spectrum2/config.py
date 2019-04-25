@@ -7,7 +7,7 @@ import os.path
 # <section> ::= [<identifier>*]
 # <assignment> ::= <identifier> <space>* = <space>* <value>
 
-class SpectrumConfig:
+class Config:
 	"""
 	Represents spectrum2 configuration options.
 	"""
@@ -20,6 +20,7 @@ class SpectrumConfig:
 		"""
 		self.config_path = path_to_config_file
 		self.options = self.loadConfig(self.config_path)
+		
 		# Load backend_logging information
 		if 'logging.backend_config' in self.options:
 			if os.path.isfile(self['logging.backend_config']):
