@@ -12,7 +12,7 @@ def read_file(filename, encoding='utf8'):
 here = os.path.abspath(os.path.dirname(__file__))
 readme = read_file(os.path.join(here, 'README.rst'))
 
-setup(name='pyspectrum',
+setup(name='pyspectrum2',
     version='0.1.0',
     description='pyspectrum2 implements the Protobuf-based interface to Spectrum2 required for building Python-based Spectrum2 backends',
     long_description=readme,
