@@ -253,16 +253,14 @@ class Backend:
 
     def handle_logout_payload(self, data):
         payload = pb2.Logout()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_logout_request(payload.user,
                                    payload.legacyName)
 
     def handle_status_changed_payload(self, data):
         payload = pb2.Status()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_status_change_request(payload.userName,
                                           payload.status,
@@ -270,8 +268,7 @@ class Backend:
 
     def handle_conv_message_payload(self, data):
         payload = pb2.ConversationMessage()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_message_send_request(payload.userName,
                                          payload.buddyName,
@@ -281,8 +278,7 @@ class Backend:
 
     def handle_conv_message_ack_payload(self, data):
         payload = pb2.ConversationMessage()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_message_ack_request(payload.userName,
                                         payload.buddyName,
@@ -290,17 +286,15 @@ class Backend:
 
     def handle_attention_payload(self, data):
         payload = pb2.ConversationMessage()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
-        
+        payload.ParseFromString(data)
+
         self.handle_attention_request(payload.userName,
                                       payload.buddyName,
                                       payload.message)
 
     def handle_ft_start_payload(self, data):
         payload = pb2.File()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_ft_start_request(payload.userName,
                                      payload.buddyName,
@@ -310,8 +304,7 @@ class Backend:
 
     def handle_ft_finish_payload(self, data):
         payload = pb2.File()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_ft_finish_request(payload.userName,
                                      payload.buddyName,
@@ -321,22 +314,19 @@ class Backend:
 
     def handle_ft_pause_payload(self, data):
         payload = pb2.FileTransferData()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_ft_pause_request(payload.ftId)
 
     def handle_ft_continue_payload(self, data):
         payload = pb2.FileTransferData()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_ft_continue_request(payload.ftId)
 
     def handle_join_room_payload(self, data):
         payload = pb2.Room()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_join_room_request(payload.userName,
                                       payload.room,
@@ -345,16 +335,14 @@ class Backend:
 
     def handle_leave_room_payload(self, data):
         payload = pb2.Room()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_leave_room_request(payload.userName,
                                        payload.room)
 
     def handle_vcard_payload(self, data):
         payload = pb2.VCard()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         if payload.HasField('photo'):
             self.handle_vcard_updated_request(payload.userName,
@@ -366,8 +354,7 @@ class Backend:
 
     def handle_buddy_changed_payload(self, data):
         payload = pb2.Buddy()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         if payload.HasField('blocked'):
             self.handle_buddy_block_toggled(payload.userName,
@@ -381,8 +368,7 @@ class Backend:
 
     def handle_buddy_removed_payload(self, data):
         payload = pb2.Buddy()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         groups = [g for g in payload.group]
         self.handle_buddy_removed_request(payload.userName,
@@ -391,15 +377,13 @@ class Backend:
 
     def handle_buddies_payload(self, data):
         payload = pb2.Buddies()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_buddies(payload)
 
     def handle_chat_state_payload(self, data, msg_type):
         payload = pb2.Buddy()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         if msg_type == pb2.WrapperMessage.TYPE_BUDDY_TYPING:
                 self.handle_typing_request(payload.userName,
@@ -427,15 +411,10 @@ class Backend:
             packet = self._data[4:4+expected_size]
             wrapper = pb2.WrapperMessage()
             try:
-                parseFromString = wrapper.ParseFromString(packet)
+                wrapper.ParseFromString(packet)
             except:
                 self._data = self._data[expected_size+4:]
                 self.logger.error("Parse from String exception. Skipping packet.")
-                return
-
-            if parseFromString is False:
-                self._data = self._data[expected_size+4:]
-                self.logger.error("Parse from String failed. Skipping packet.")
                 return
 
             self._data = self._data[4+expected_size:]
