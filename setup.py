@@ -14,7 +14,8 @@ readme = read_file(os.path.join(here, 'README.rst'))
 
 setup(name='pyspectrum2',
     version='0.1.0',
-    description='pyspectrum2 implements the Protobuf-based interface to Spectrum2 required for building Python-based Spectrum2 backends',
+    description='pyspectrum2 implements the Protobuf-based interface to '
+                'Spectrum2 required for building Python-based backends',
     long_description=readme,
     keywords='spectrum2 xmpp im gateway transport',
     url='https://github.com/SpectrumIM/spectrum2',
@@ -30,7 +31,7 @@ setup(name='pyspectrum2',
     ],
     license='GPL-3+',
     packages=[
-        'Spectrum2'
+        'spectrum2'
     ],
     install_requires=[
         'protobuf',
