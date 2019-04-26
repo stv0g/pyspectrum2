@@ -1,7 +1,6 @@
 import asyncore
 import socket
 import logging
-import sys
 
 
 class IOChannel(asyncore.dispatcher):
