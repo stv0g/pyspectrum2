@@ -1,22 +1,23 @@
 import os.path
 
-# I'm guessing this is the format of the spectrum config file in BNF
-# <config_file> ::= <line>*
-# <line> ::= <space>* <expr> <space>* <newline> | <space*>
-# <expr> ::= <section> | <assignment>
-# <section> ::= [<identifier>*]
-# <assignment> ::= <identifier> <space>* = <space>* <value>
 
 class Config:
     """
     Represents spectrum2 configuration options.
+
+    I'm guessing this is the format of the spectrum config file in BNF
+    <config_file> ::= <line>*
+    <line> ::= <space>* <expr> <space>* <newline> | <space*>
+    <expr> ::= <section> | <assignment>
+    <section> ::= [<identifier>*]
+    <assignment> ::= <identifier> <space>* = <space>* <value>
     """
     def __init__(self, path_to_config_file):
         """
         Initialises configuration file.
 
-        Args:
-            path_to_config_file: The absolute path to the configuration file.
+        @param path_to_config_file: The absolute path
+                                    to the configuration file.
         """
         self.config_path = path_to_config_file
         self.options = self.load_config(self.config_path)
@@ -31,7 +32,7 @@ class Config:
         # Current section heading,
         # It's a dictionary because variables in python closures can't be
         # assigned to.
-        section = {'a': ""}
+        section = {'a': ''}
         options = dict()
 
         # Recursive descent parser
@@ -59,13 +60,13 @@ class Config:
             return (line[:i], line[i:])
 
         def parse_section(line):
-            if len(line) == 0 or line[0] != '[':
+            if not line or line[0] != '[':
                 return (None, 'expected [')
 
             line = line[1:]
             identifier, line = read_identifier(line)
 
-            if len(line) == 0 or line[0] != ']' or identifier is None:
+            if not line or line[0] != ']' or identifier is None:
                 return (None, line)
 
             return (identifier, line[1:])
@@ -76,7 +77,7 @@ class Config:
                 return (None, None, line)
 
             line = consume_spaces(line)
-            if len(line) == 0 or line[0] != '=':
+            if not line or line[0] != '=':
                 return (None, None, 'Expected =')
 
             line = consume_spaces(line[1:])
@@ -107,16 +108,18 @@ class Config:
 
             newline, error = expr(line)
             if newline is None:
-                raise ConfigParseError(str(line_number) + ': ' + error + ': ' + repr(line))
+                raise ConfigParseError(
+                    '{}: Expected newline got {}'.format(line_number, newline))
 
             newline = consume_spaces(newline)
             if newline != '\n':
-                raise ConfigParseError(str(line_number) + ': Expected newline got ' + repr(newline))
+                raise ConfigParseError(
+                    '{}: Expected newline got {}'.format(line_number, newline))
 
         def strip_comments(line):
             i = 0
             for c in line:
-                if c == '#' or c == '\n':
+                if c in ('#', '\n'):
                     break
                 i += 1
 

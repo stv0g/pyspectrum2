@@ -1,14 +1,13 @@
 # pylint: disable=no-member
 
-import socket
 import struct
 import sys
 import os
 import logging
-import google.protobuf
 import resource
 
 from . import protocol_pb2 as pb2
+from .protocol_pb2 import WrapperMessage as wm
 
 
 class Backend:
@@ -23,64 +22,65 @@ class Backend:
         self._ping_received = False
         self._data = bytes()
         self._init_res = 0
-        self.logger = logging.getLogger(self._class_._name_)
+        self.logger = logging.getLogger(self.__class__.__name__)
 
-    def handle_message(self, user, legacy_name, msg, nickname="", xhtml="",
-                       timestamp=""):
+    def handle_message(self, user, legacy_name, message, nickname='', xhtml='',
+                       timestamp=''):
         m = pb2.ConversationMessage()
         m.userName = user
         m.buddy_name = legacy_name
-        m.message = msg
+        m.message = message
         m.nickname = nickname
         m.xhtml = xhtml
         m.timestamp = str(timestamp)
 
         self.send_wrapped(m.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_CONV_MESSAGE)
+                          wm.TYPE_CONV_MESSAGE)
 
-    def handle_message_ack(self, user, legacy_name, id):
+    def handle_message_ack(self, user, legacy_name, identifier):
         m = pb2.ConversationMessage()
         m.userName = user
         m.buddyName = legacy_name
-        m.message = ""
-        m.id = id
+        m.message = ''
+        m.id = identifier
 
         self.send_wrapped(m.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_CONV_MESSAGE_ACK)
+                          wm.TYPE_CONV_MESSAGE_ACK)
 
-    def handle_attention(self, user, buddy_name, msg):
+    def handle_attention(self, user, buddy_name, message):
         m = pb2.ConversationMessage()
         m.userName = user
         m.buddyName = buddy_name
-        m.message = msg
+        m.message = message
 
         self.send_wrapped(m.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_ATTENTION)
+                          wm.TYPE_ATTENTION)
 
-    def handle_vcard(self, user, id, legacy_name, fullName, nickname, photo):
+    def handle_vcard(self, user, identifier, legacy_name, full_name,
+                     nickname, photo):
         vcard = pb2.VCard()
         vcard.userName = user
         vcard.buddyName = legacy_name
-        vcard.id = id
-        vcard.fullname = fullName
+        vcard.id = identifier
+        vcard.fullname = full_name
         vcard.nickname = nickname
         vcard.photo = bytes(photo)
 
         self.send_wrapped(vcard.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_VCARD)
+                          wm.TYPE_VCARD)
 
-    def handle_subject(self, user, legacy_name, msg, nickname=""):
+    def handle_subject(self, user, legacy_name, message, nickname=''):
         m = pb2.ConversationMessage()
         m.userName = user
         m.buddyName = legacy_name
-        m.message = msg
+        m.message = message
         m.nickname = nickname
 
         self.send_wrapped(m.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_ROOM_SUBJECT_CHANGED)
+                          wm.TYPE_ROOM_SUBJECT_CHANGED)
 
     def handle_buddy_changed(self, user, buddy_name, alias, groups, status,
-                             status_message="", icon_hash="", blocked=False):
+                             status_message='', icon_hash='', blocked=False):
         buddy = pb2.Buddy()
         buddy.userName = user
         buddy.buddyName = buddy_name
@@ -92,7 +92,7 @@ class Backend:
         buddy.blocked = blocked
 
         self.send_wrapped(buddy.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_BUDDY_CHANGED)
+                          wm.TYPE_BUDDY_CHANGED)
 
     def handle_buddy_removed(self, user, buddy_name):
         buddy = pb2.Buddy()
@@ -100,7 +100,7 @@ class Backend:
         buddy.buddyName = buddy_name
 
         self.send_wrapped(buddy.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_BUDDY_REMOVED)
+                          wm.TYPE_BUDDY_REMOVED)
 
     def handle_buddy_typing(self, user, buddy_name):
         buddy = pb2.Buddy()
@@ -108,7 +108,7 @@ class Backend:
         buddy.buddyName = buddy_name
 
         self.send_wrapped(buddy.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_BUDDY_TYPING)
+                          wm.TYPE_BUDDY_TYPING)
 
     def handle_buddy_typed(self, user, buddy_name):
         buddy = pb2.Buddy()
@@ -116,7 +116,7 @@ class Backend:
         buddy.buddyName = buddy_name
 
         self.send_wrapped(buddy.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_BUDDY_TYPED)
+                          wm.TYPE_BUDDY_TYPED)
 
     def handle_buddy_stopped_typing(self, user, buddy_name):
         buddy = pb2.Buddy()
@@ -124,7 +124,7 @@ class Backend:
         buddy.buddyName = buddy_name
 
         self.send_wrapped(buddy.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_BUDDY_STOPPED_TYPING)
+                          wm.TYPE_BUDDY_STOPPED_TYPING)
 
     def handle_authorization(self, user, buddy_name):
         buddy = pb2.Buddy()
@@ -132,27 +132,27 @@ class Backend:
         buddy.buddyName = buddy_name
 
         self.send_wrapped(buddy.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_AUTH_REQUEST)
+                          wm.TYPE_AUTH_REQUEST)
 
     def handle_connected(self, user):
         d = pb2.Connected()
         d.user = user
 
         self.send_wrapped(d.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_CONNECTED)
+                          wm.TYPE_CONNECTED)
 
-    def handle_disconnected(self, user, error=0, msg=""):
+    def handle_disconnected(self, user, error=0, message=''):
         d = pb2.Disconnected()
         d.user = user
         d.error = error
-        d.message = msg
+        d.message = message
 
         self.send_wrapped(d.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_DISCONNECTED)
+                          wm.TYPE_DISCONNECTED)
 
     def handle_participant_changed(self, user, nickname, room, flags, status,
-                                   status_message="", newname="",
-                                   icon_hash=""):
+                                   status_message='', newname='',
+                                   icon_hash=''):
         d = pb2.Participant()
         d.userName = user
         d.nickname = nickname
@@ -164,17 +164,17 @@ class Backend:
         d.statusMessage = status_message
 
         self.send_wrapped(d.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_PARTICIPANT_CHANGED)
+                          wm.TYPE_PARTICIPANT_CHANGED)
 
     def handle_room_nickname_changed(self, user, r, nickname):
         room = pb2.Room()
         room.userName = user
         room.nickname = nickname
         room.room = r
-        room.password = ""
+        room.password = ''
 
         self.send_wrapped(room.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_ROOM_NICKNAME_CHANGED)
+                          wm.TYPE_ROOM_NICKNAME_CHANGED)
 
     def handle_room_list(self, rooms):
         room_list = pb2.RoomList()
@@ -184,44 +184,45 @@ class Backend:
             room_list.name.append(room[1])
 
         self.send_wrapped(room_list.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_ROOM_LIST)
+                          wm.TYPE_ROOM_LIST)
 
-    def handle_ft_start(self, user, buddy_name, fileName, size):
+    def handle_ft_start(self, user, buddy_name, filename, size):
         room = pb2.File()
         room.userName = user
         room.buddyName = buddy_name
-        room.fileName = fileName
+        room.fileName = filename
         room.size = size
 
         self.send_wrapped(room.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_FT_START)
+                          wm.TYPE_FT_START)
 
-    def handle_ft_finish(self, user, buddy_name, fileName, size, ftid):
+    def handle_ft_finish(self, user, buddy_name, filename, size, ft_id):
         room = pb2.File()
         room.userName = user
         room.buddyName = buddy_name
-        room.fileName = fileName
+        room.fileName = filename
         room.size = size
 
         # Check later
-        if ftid != 0:
-            room.ft_id = ftid
+        if ft_id != 0:
+            room.ft_id = ft_id
 
         self.send_wrapped(room.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_FT_FINISH)
+                          wm.TYPE_FT_FINISH)
 
     def handle_ft_data(self, ft_id, data):
         d = pb2.FileTransferData()
-        d.ftid = ft_id
+        d.ftID = ft_id
         d.data = bytes(data)
 
         self.send_wrapped(d.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_FT_DATA)
+                          wm.TYPE_FT_DATA)
 
     def handle_backend_config(self, data):
         """
-        data is a dictionary, whose keys are sections and values are a list of
-        tuples of configuration key and configuration value.
+        @param data: a dictionary, whose keys are sections and values are
+                     a list of tuples of configuration key
+                     and configuration value.
         """
         c = pb2.BackendConfig()
         config = []
@@ -233,14 +234,14 @@ class Backend:
         c.config = '\n'.join(config)
 
         self.send_wrapped(c.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_BACKEND_CONFIG)
+                          wm.TYPE_BACKEND_CONFIG)
 
     def handle_query(self, command):
         c = pb2.BackendConfig()
         c.config = command
 
         self.send_wrapped(c.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_QUERY)
+                          wm.TYPE_QUERY)
 
     def handle_login_payload(self, data):
         payload = pb2.Login()
@@ -307,10 +308,10 @@ class Backend:
         payload.ParseFromString(data)
 
         self.handle_ft_finish_request(payload.userName,
-                                     payload.buddyName,
-                                     payload.fileName,
-                                     payload.size,
-                                     payload.ftId)
+                                      payload.buddyName,
+                                      payload.fileName,
+                                      payload.size,
+                                      payload.ftId)
 
     def handle_ft_pause_payload(self, data):
         payload = pb2.FileTransferData()
@@ -348,7 +349,7 @@ class Backend:
             self.handle_vcard_updated_request(payload.userName,
                                               payload.photo,
                                               payload.nickname)
-        elif len(payload.buddyName) > 0:
+        elif payload.buddyName:
             self.handle_vcard_request(payload.userName, payload.buddyName,
                                       payload.id)
 
@@ -381,97 +382,101 @@ class Backend:
 
         self.handle_buddies(payload)
 
-    def handle_chat_state_payload(self, data, msg_type):
+    def handle_chat_state_payload(self, data, message_type):
         payload = pb2.Buddy()
         payload.ParseFromString(data)
 
-        if msg_type == pb2.WrapperMessage.TYPE_BUDDY_TYPING:
-                self.handle_typing_request(payload.userName,
-                                           payload.buddyName)
-        elif msg_type == pb2.WrapperMessage.TYPE_BUDDY_TYPED:
-                self.handle_typed_request(payload.userName,
-                                          payload.buddyName)
-        elif msg_type == pb2.WrapperMessage.TYPE_BUDDY_STOPPED_TYPING:
-                self.handle_stopped_typing_request(payload.userName,
-                                                   payload.buddyName)
+        if message_type == wm.TYPE_BUDDY_TYPING:
+            self.handle_typing_request(payload.userName,
+                                       payload.buddyName)
+        elif message_type == wm.TYPE_BUDDY_TYPED:
+            self.handle_typed_request(payload.userName,
+                                      payload.buddyName)
+        elif message_type == wm.TYPE_BUDDY_STOPPED_TYPING:
+            self.handle_stopped_typing_request(payload.userName,
+                                               payload.buddyName)
 
     def handle_data_read(self, data):
         self._data += data
-        while len(self._data) != 0:
+        while self._data:
             expected_size = 0
             if len(self._data) >= 4:
                 expected_size = struct.unpack('!I', self._data[0:4])[0]
                 if len(self._data) - 4 < expected_size:
-                    self.logger.debug("Data packet incomplete")
+                    self.logger.debug('Data packet incomplete')
                     return
             else:
-                self.logger.debug("Data packet incomplete")
+                self.logger.debug('Data packet incomplete')
                 return
 
             packet = self._data[4:4+expected_size]
-            wrapper = pb2.WrapperMessage()
+            wrapper = wm()
             try:
                 wrapper.ParseFromString(packet)
             except:
                 self._data = self._data[expected_size+4:]
-                self.logger.error("Parse from String exception. Skipping packet.")
+                self.logger.error('Parse from String exception. '
+                                  'Skipping packet.')
                 return
 
             self._data = self._data[4+expected_size:]
 
-            if wrapper.type == pb2.WrapperMessage.TYPE_LOGIN:
-                self.handle_login_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_LOGOUT:
-                self.handle_logout_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_PING:
+            if wrapper.type == wm.TYPE_PING:
                 self.send_pong()
-            elif wrapper.type == pb2.WrapperMessage.TYPE_CONV_MESSAGE:
-                self.handle_conv_message_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_JOIN_ROOM:
-                self.handle_join_room_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_LEAVE_ROOM:
-                self.handle_leave_room_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_VCARD:
-                self.handle_vcard_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_BUDDY_CHANGED:
-                self.handle_buddy_changed_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_BUDDY_REMOVED:
-                self.handle_buddy_removed_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_STATUS_CHANGED:
-                self.handle_status_changed_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_BUDDY_TYPING:
-                self.handle_chat_state_ayload(wrapper.payload, pb2.WrapperMessage.TYPE_BUDDY_TYPING)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_BUDDY_TYPED:
-                self.handle_chat_state_payload(wrapper.payload, pb2.WrapperMessage.TYPE_BUDDY_TYPED)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_BUDDY_STOPPED_TYPING:
-                self.handle_chat_state_payload(wrapper.payload, pb2.WrapperMessage.TYPE_BUDDY_STOPPED_TYPING)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_ATTENTION:
-                self.handle_attention_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_FT_START:
-                self.handle_ft_start_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_FT_FINISH:
-                self.handle_ft_finish_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_FT_PAUSE:
-                self.handle_ft_pause_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_FT_CONTINUE:
-                self.handle_ft_continue_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_EXIT:
+            elif wrapper.type == wm.TYPE_EXIT:
                 self.handle_exit_request()
-            elif wrapper.type == pb2.WrapperMessage.TYPE_CONV_MESSAGE_ACK:
+            elif wrapper.type == wm.TYPE_LOGIN:
+                self.handle_login_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_LOGOUT:
+                self.handle_logout_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_CONV_MESSAGE:
+                self.handle_conv_message_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_JOIN_ROOM:
+                self.handle_join_room_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_LEAVE_ROOM:
+                self.handle_leave_room_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_VCARD:
+                self.handle_vcard_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_BUDDY_CHANGED:
+                self.handle_buddy_changed_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_BUDDY_REMOVED:
+                self.handle_buddy_removed_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_STATUS_CHANGED:
+                self.handle_status_changed_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_ATTENTION:
+                self.handle_attention_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_FT_START:
+                self.handle_ft_start_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_FT_FINISH:
+                self.handle_ft_finish_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_FT_PAUSE:
+                self.handle_ft_pause_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_FT_CONTINUE:
+                self.handle_ft_continue_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_CONV_MESSAGE_ACK:
                 self.handle_conv_message_ack_payload(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_RAW_XML:
+            elif wrapper.type == wm.TYPE_RAW_XML:
                 self.handle_raw_xml_request(wrapper.payload)
-            elif wrapper.type == pb2.WrapperMessage.TYPE_BUDDIES:
+            elif wrapper.type == wm.TYPE_BUDDIES:
                     self.handle_buddies_payload(wrapper.payload)
+            elif wrapper.type == wm.TYPE_BUDDY_TYPING:
+                self.handle_chat_state_payload(wrapper.payload,
+                                               wm.TYPE_BUDDY_TYPING)
+            elif wrapper.type == wm.TYPE_BUDDY_TYPED:
+                self.handle_chat_state_payload(wrapper.payload,
+                                               wm.TYPE_BUDDY_TYPED)
+            elif wrapper.type == wm.TYPE_BUDDY_STOPPED_TYPING:
+                self.handle_chat_state_payload(wrapper.payload,
+                                               wm.TYPE_BUDDY_STOPPED_TYPING)
 
     def send(self, data):
-        header = struct.pack('!I',len(data))
+        header = struct.pack('!I', len(data))
         self.send_data(header + data)
 
-    def send_wrapped(self, msg, type):
-        wrap = pb2.WrapperMessage()
-        wrap.type = TYPE
-        wrap.payload = bytes(MESSAGE)
+    def send_wrapped(self, message, typ):
+        wrap = wm()
+        wrap.type = typ
+        wrap.payload = bytes(message)
 
         self.send(wrap.SerializeToString())
 
@@ -482,8 +487,8 @@ class Backend:
 
     def send_pong(self):
         self._ping_received = True
-        wrap = pb2.WrapperMessage()
-        wrap.type = pb2.WrapperMessage.TYPE_PONG
+        wrap = wm()
+        wrap.type = wm.TYPE_PONG
         message = wrap.SerializeToString()
         self.send(message)
         self.sendMemoryUsage()
@@ -502,28 +507,18 @@ class Backend:
         stats.id = str(os.getpid())
 
         self.send_wrapped(stats.SerializeToString(),
-                          pb2.WrapperMessage.TYPE_STATS)
+                          wm.TYPE_STATS)
 
     def handle_login_request(self, user, legacy_name, password, extra):
         """
         Called when XMPP user wants to connect legacy network.
-        You should connect him to legacy network and call handle_connected or handle_disconnected function later.
+        You should connect him to legacy network and call handle_connected
+        or handle_disconnected function later.
+
         @param user: XMPP JID of user for which this event occurs.
         @param legacy_name: Legacy network name of this user used for login.
         @param password: Legacy network password of this user.
         """
-
-        #\msc
-        #NetworkPlugin,YourNetworkPlugin,LegacyNetwork;
-        #NetworkPlugin->YourNetworkPlugin [label="handle_loginRequest(...)", URL="\ref NetworkPlugin::handle_loginRequest()"];
-        #YourNetworkPlugin->LegacyNetwork [label="connect the legacy network"];
-        #--- [label="If password was valid and user is connected and logged in"];
-        #YourNetworkPlugin<-LegacyNetwork [label="connected"];
-        #YourNetworkPlugin->NetworkPlugin [label="handle_connected()", URL="\ref NetworkPlugin::handle_connected()"];
-        #--- [label="else"];
-        #YourNetworkPlugin<-LegacyNetwork [label="disconnected"];
-        #YourNetworkPlugin->NetworkPlugin [label="handle_disconnected()", URL="\ref NetworkPlugin::handle_disconnected()"];
-        #\endmsc
 
         raise NotImplementedError()
 
@@ -540,42 +535,39 @@ class Backend:
 
         raise NotImplementedError()
 
-    def handle_message_send_request(self, user, legacy_name, message, xhtml="", id=0):
+    def handle_message_send_request(self, user, legacy_name, message,
+                                    xhtml='', identifier=0):
         """
         Called when XMPP user sends message to legacy network.
         @param user: XMPP JID of user for which this event occurs.
         @param legacy_name: Legacy network name of buddy or room.
         @param message: Plain text message.
         @param xhtml: XHTML message.
-        @param id: message ID
+        @param identifier: message ID
         """
 
         raise NotImplementedError()
 
-    def handle_message_ack_request(self, user, legacy_name, id=0):
+    def handle_message_ack_request(self, user, legacy_name, identifier=0):
         """
         Called when XMPP user sends message to legacy network.
         @param user: XMPP JID of user for which this event occurs.
         @param legacy_name: Legacy network name of buddy or room.
-        @param id: message ID
+        @param identifier: message ID
         """
 
-        #raise NotImplementedError()
+        # raise NotImplementedError()
         pass
 
-    def handle_vcard_request(self, user, legacy_name, id):
+    def handle_vcard_request(self, user, legacy_name, identifier):
         """ Called when XMPP user requests VCard of buddy.
         @param user: XMPP JID of user for which this event occurs.
-        @param legacy_name: Legacy network name of buddy whose VCard is requested.
-        @param id: ID which is associated with this request. You have to pass it to handle_vcard function when you receive VCard."""
-
-        #\msc
-        #NetworkPlugin,YourNetworkPlugin,LegacyNetwork;
-        #NetworkPlugin->YourNetworkPlugin [label="handle_vcard_request(...)", URL="\ref NetworkPlugin::handle_vcard_request()"];
-        #YourNetworkPlugin->LegacyNetwork [label="start VCard fetching"];
-        #YourNetworkPlugin<-LegacyNetwork [label="VCard fetched"];
-        #YourNetworkPlugin->NetworkPlugin [label="handle_vcard()", URL="\ref NetworkPlugin::handle_vcard()"];
-        #\endmsc
+        @param legacy_name: Legacy network name of buddy
+                            whose VCard is requested.
+        @param identifier: ID which is associated with this request.
+                           You have to pass it to handle_vcard function
+                           when you receive VCard.
+        """
 
         pass
 
@@ -586,9 +578,10 @@ class Backend:
         @param user: XMPP JID of user for which this event occurs.
         @param photo: Raw photo data.
         """
+
         pass
 
-    def handle_join_room_request(self, user, room, nickname, pasword):
+    def handle_join_room_request(self, user, room, nickname, password):
         pass
 
     def handle_leave_room_request(self, user, room):
@@ -597,7 +590,7 @@ class Backend:
     def handle_status_change_request(self, user, status, status_message):
         pass
 
-    def handle_buddy_updated_request(self, user,  buddy_name, alias, groups):
+    def handle_buddy_updated_request(self, user, buddy_name, alias, groups):
         pass
 
     def handle_buddy_removed_request(self, user, buddy_name, groups):
@@ -618,10 +611,12 @@ class Backend:
     def handle_attention_request(self, user, buddy_name, message):
         pass
 
-    def handle_ft_start_request(self, user, buddy_name, fileName, size, ft_id):
+    def handle_ft_start_request(self, user, buddy_name,
+                                file_name, size, ft_id):
         pass
 
-    def handle_ft_finish_request(self, user, buddy_name, fileName, size, ft_id):
+    def handle_ft_finish_request(self, user, buddy_name,
+                                 file_name, size, ft_id):
         pass
 
     def handle_ft_pause_request(self, ft_id):
@@ -631,7 +626,7 @@ class Backend:
         pass
 
     def handle_memory_usage(self):
-        return (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss, 0)
+        return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss, 0
 
     def handle_exit_request(self):
         sys.exit(1)
