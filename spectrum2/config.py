@@ -48,7 +48,7 @@ class Config:
         def read_identifier(line):
             i = 0
             for c in line:
-                if c == ' ' or c == ']' or c == '[' or c == '=':
+                if c in (' ', ']', '[', '='):
                     break
                 i += 1
 
