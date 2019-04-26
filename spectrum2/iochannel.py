@@ -36,7 +36,7 @@ class IOChannel(asyncore.dispatcher):
         self.close_callback()
 
     def writable(self):
-        return (len(self.buffer) > 0)
+        return len(self.buffer) > 0
 
     def readable(self):
         return True
