@@ -27,5 +27,5 @@ pyspectrum2 is licensed under the GPLv3_ license.
 .. _Spectrum2: http://www.spectrum.im
 .. _GPLv3: COPYING.rst
 .. _transWhat: https://github.com/stv0g/transwhat/
-.. _stv0g: https://github.com/stv0g
-.. _sarangbh: https://github.com/sarangbh
+.. _@stv0g: https://github.com/stv0g
+.. _@sarangbh: https://github.com/sarangbh
