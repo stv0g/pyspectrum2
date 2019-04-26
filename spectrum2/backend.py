@@ -16,7 +16,7 @@ class Backend:
     Creates new NetworkPlugin and connects the Spectrum2 NetworkPluginServer.
     @param loop: Event loop.
     @param host: Host where Spectrum2 NetworkPluginServer runs.
-    @param port: Port. 
+    @param port: Port.
     """
 
     def __init__(self):
@@ -73,7 +73,7 @@ class Backend:
         m = pb2.ConversationMessage()
         m.userName = user
         m.buddyName = legacy_name
-        m.message = msg 
+        m.message = msg
         m.nickname = nickname
 
         self.send_wrapped(m.SerializeToString(),
@@ -205,7 +205,7 @@ class Backend:
 
         # Check later
         if ftid != 0:
-            room.ft_id = ftid 
+            room.ft_id = ftid
 
         self.send_wrapped(room.SerializeToString(),
                           pb2.WrapperMessage.TYPE_FT_FINISH)
@@ -238,14 +238,13 @@ class Backend:
     def handle_query(self, command):
         c = pb2.BackendConfig()
         c.config = command
-        
+
         self.send_wrapped(c.SerializeToString(),
                           pb2.WrapperMessage.TYPE_QUERY)
 
     def handle_login_payload(self, data):
         payload = pb2.Login()
-        if payload.ParseFromString(data) is False:
-            return  # TODO: Handle error
+        payload.ParseFromString(data)
 
         self.handle_login_request(payload.user,
                                   payload.legacyName,
@@ -259,7 +258,7 @@ class Backend:
 
         self.handle_logout_request(payload.user,
                                    payload.legacyName)
-    
+
     def handle_status_changed_payload(self, data):
         payload = pb2.Status()
         if payload.ParseFromString(data) is False:
@@ -276,16 +275,16 @@ class Backend:
 
         self.handle_message_send_request(payload.userName,
                                          payload.buddyName,
-                                         payload.message, 
+                                         payload.message,
                                          payload.xhtml,
                                          payload.id)
-    
+
     def handle_conv_message_ack_payload(self, data):
         payload = pb2.ConversationMessage()
         if payload.ParseFromString(data) is False:
             return  # TODO: Handle error
 
-        self.handle_message_ack_request(payload.userName, 
+        self.handle_message_ack_request(payload.userName,
                                         payload.buddyName,
                                         payload.id)
 
@@ -297,7 +296,7 @@ class Backend:
         self.handle_attention_request(payload.userName,
                                       payload.buddyName,
                                       payload.message)
-    
+
     def handle_ft_start_payload(self, data):
         payload = pb2.File()
         if payload.ParseFromString(data) is False:
@@ -341,7 +340,7 @@ class Backend:
 
         self.handle_join_room_request(payload.userName,
                                       payload.room,
-                                      payload.nickname, 
+                                      payload.nickname,
                                       payload.password)
 
     def handle_leave_room_payload(self, data):
@@ -489,7 +488,7 @@ class Backend:
     def send(self, data):
         header = struct.pack('!I',len(data))
         self.send_data(header + data)
-    
+
     def send_wrapped(self, msg, type):
         wrap = pb2.WrapperMessage()
         wrap.type = TYPE
@@ -509,7 +508,7 @@ class Backend:
         message = wrap.SerializeToString()
         self.send(message)
         self.sendMemoryUsage()
-    
+
     def send_memory_usage(self):
         stats = pb2.Stats()
 
@@ -527,7 +526,7 @@ class Backend:
                           pb2.WrapperMessage.TYPE_STATS)
 
     def handle_login_request(self, user, legacy_name, password, extra):
-        """ 
+        """
         Called when XMPP user wants to connect legacy network.
         You should connect him to legacy network and call handle_connected or handle_disconnected function later.
         @param user: XMPP JID of user for which this event occurs.
@@ -590,7 +589,7 @@ class Backend:
         @param user: XMPP JID of user for which this event occurs.
         @param legacy_name: Legacy network name of buddy whose VCard is requested.
         @param id: ID which is associated with this request. You have to pass it to handle_vcard function when you receive VCard."""
-            
+
         #\msc
         #NetworkPlugin,YourNetworkPlugin,LegacyNetwork;
         #NetworkPlugin->YourNetworkPlugin [label="handle_vcard_request(...)", URL="\ref NetworkPlugin::handle_vcard_request()"];
@@ -598,7 +597,7 @@ class Backend:
         #YourNetworkPlugin<-LegacyNetwork [label="VCard fetched"];
         #YourNetworkPlugin->NetworkPlugin [label="handle_vcard()", URL="\ref NetworkPlugin::handle_vcard()"];
         #\endmsc
-    
+
         pass
 
     def handle_vcard_updated_request(self, user, photo, nickname):
@@ -612,40 +611,40 @@ class Backend:
 
     def handle_join_room_request(self, user, room, nickname, pasword):
         pass
-        
+
     def handle_leave_room_request(self, user, room):
         pass
-        
+
     def handle_status_change_request(self, user, status, status_message):
         pass
 
     def handle_buddy_updated_request(self, user,  buddy_name, alias, groups):
         pass
-        
+
     def handle_buddy_removed_request(self, user, buddy_name, groups):
         pass
-        
+
     def handle_buddy_block_toggled(self, user, buddy_name, blocked):
         pass
 
     def handle_typing_request(self, user, buddy_name):
         pass
-        
+
     def handle_typed_request(self, user, buddy_name):
         pass
-        
+
     def handle_stopped_typing_request(self, user, buddy_name):
         pass
-        
+
     def handle_attention_request(self, user, buddy_name, message):
         pass
 
     def handle_ft_start_request(self, user, buddy_name, fileName, size, ft_id):
         pass
-        
+
     def handle_ft_finish_request(self, user, buddy_name, fileName, size, ft_id):
         pass
-        
+
     def handle_ft_pause_request(self, ft_id):
         pass
 

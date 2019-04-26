@@ -20,7 +20,7 @@ class Config:
         """
         self.config_path = path_to_config_file
         self.options = self.load_config(self.config_path)
-        
+
         # Load backend_logging information
         if 'logging.backend_config' in self.options:
             if os.path.isfile(self['logging.backend_config']):
@@ -42,7 +42,7 @@ class Config:
                 if c != ' ':
                     break
                 i += 1
-            
+
             return line[i:]
 
         def read_identifier(line):
@@ -55,7 +55,7 @@ class Config:
             # no identifier
             if i == 0:
                 return (None, 'No identifier')
-           
+
             return (line[:i], line[i:])
 
         def parse_section(line):
@@ -64,24 +64,24 @@ class Config:
 
             line = line[1:]
             identifier, line = read_identifier(line)
-            
+
             if len(line) == 0 or line[0] != ']' or identifier is None:
                 return (None, line)
-            
+
             return (identifier, line[1:])
 
         def parse_assignment(line):
             key, line = read_identifier(line)
             if key is None:
                 return (None, None, line)
-            
+
             line = consume_spaces(line)
             if len(line) == 0 or line[0] != '=':
                 return (None, None, 'Expected =')
-            
+
             line = consume_spaces(line[1:])
             value = line[:-1]
-            
+
             return (key, value, '\n')
 
         def expr(line):
@@ -97,18 +97,18 @@ class Config:
                         options[key] = value
                 else:
                     return (None, newline)
-            
+
             return (newline, None)
 
         def parse_line(line, line_number):
             line = consume_spaces(line)
             if line == '\n':
                 return
-            
+
             newline, error = expr(line)
             if newline is None:
                 raise ConfigParseError(str(line_number) + ': ' + error + ': ' + repr(line))
-            
+
             newline = consume_spaces(newline)
             if newline != '\n':
                 raise ConfigParseError(str(line_number) + ': Expected newline got ' + repr(newline))
@@ -119,7 +119,7 @@ class Config:
                 if c == '#' or c == '\n':
                     break
                 i += 1
-            
+
             return line[:i] + '\n'
 
         with open(file_name, 'r') as f:
