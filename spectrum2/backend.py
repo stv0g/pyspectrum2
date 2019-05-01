@@ -470,10 +470,6 @@ class Backend:
                 self.handle_chat_state_payload(wrapper.payload,
                                                wm.TYPE_BUDDY_STOPPED_TYPING)
 
-    def send(self, data):
-        header = struct.pack('!I', len(data))
-        self.send_data(header + data)
-
     def send_wrapped(self, message, typ):
         wrap = wm()
         wrap.type = typ
