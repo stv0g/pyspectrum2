@@ -8,6 +8,7 @@ import resource
 
 from . import protocol_pb2 as spb2
 from .protocol_pb2 import WrapperMessage as wm
+from .config import Config
 
 
 class Backend:
@@ -629,6 +630,9 @@ class Backend:
         return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss, 0
 
     def handle_exit_request(self):
+        if self.config['service.ignore_exit_request']:
+            return
+
         sys.exit(1)
 
     def handle_raw_xml_request(self, xml):
