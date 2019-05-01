@@ -136,7 +136,10 @@ class Config:
         return options
 
     def __getitem__(self, key):
-        return self.options[key]
+        return self.options[key] if key in self.options else None
+
+    def __contains__(self, key):
+        return key in options
 
 
 class ConfigParseError(Exception):
