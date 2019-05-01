@@ -6,7 +6,7 @@ import os
 import logging
 import resource
 
-from . import protocol_pb2 as pb2
+from . import protocol_pb2 as spb2
 from .protocol_pb2 import WrapperMessage as wm
 
 
@@ -26,7 +26,7 @@ class Backend:
 
     def handle_message(self, user, legacy_name, message, nickname='', xhtml='',
                        timestamp=''):
-        m = pb2.ConversationMessage()
+        m = spb2.ConversationMessage()
         m.userName = user
         m.buddyName = legacy_name
         m.message = message
@@ -38,7 +38,7 @@ class Backend:
                           wm.TYPE_CONV_MESSAGE)
 
     def handle_message_ack(self, user, legacy_name, identifier):
-        m = pb2.ConversationMessage()
+        m = spb2.ConversationMessage()
         m.userName = user
         m.buddyName = legacy_name
         m.message = ''
@@ -48,7 +48,7 @@ class Backend:
                           wm.TYPE_CONV_MESSAGE_ACK)
 
     def handle_attention(self, user, buddy_name, message):
-        m = pb2.ConversationMessage()
+        m = spb2.ConversationMessage()
         m.userName = user
         m.buddyName = buddy_name
         m.message = message
@@ -58,7 +58,7 @@ class Backend:
 
     def handle_vcard(self, user, identifier, legacy_name, full_name,
                      nickname, photo):
-        vcard = pb2.VCard()
+        vcard = spb2.VCard()
         vcard.userName = user
         vcard.buddyName = legacy_name
         vcard.id = identifier
@@ -70,7 +70,7 @@ class Backend:
                           wm.TYPE_VCARD)
 
     def handle_subject(self, user, legacy_name, message, nickname=''):
-        m = pb2.ConversationMessage()
+        m = spb2.ConversationMessage()
         m.userName = user
         m.buddyName = legacy_name
         m.message = message
@@ -81,7 +81,7 @@ class Backend:
 
     def handle_buddy_changed(self, user, buddy_name, alias, groups, status,
                              status_message='', icon_hash='', blocked=False):
-        buddy = pb2.Buddy()
+        buddy = spb2.Buddy()
         buddy.userName = user
         buddy.buddyName = buddy_name
         buddy.alias = alias
@@ -95,7 +95,7 @@ class Backend:
                           wm.TYPE_BUDDY_CHANGED)
 
     def handle_buddy_removed(self, user, buddy_name):
-        buddy = pb2.Buddy()
+        buddy = spb2.Buddy()
         buddy.userName = user
         buddy.buddyName = buddy_name
 
@@ -103,7 +103,7 @@ class Backend:
                           wm.TYPE_BUDDY_REMOVED)
 
     def handle_buddy_typing(self, user, buddy_name):
-        buddy = pb2.Buddy()
+        buddy = spb2.Buddy()
         buddy.userName = user
         buddy.buddyName = buddy_name
 
@@ -111,7 +111,7 @@ class Backend:
                           wm.TYPE_BUDDY_TYPING)
 
     def handle_buddy_typed(self, user, buddy_name):
-        buddy = pb2.Buddy()
+        buddy = spb2.Buddy()
         buddy.userName = user
         buddy.buddyName = buddy_name
 
@@ -119,7 +119,7 @@ class Backend:
                           wm.TYPE_BUDDY_TYPED)
 
     def handle_buddy_stopped_typing(self, user, buddy_name):
-        buddy = pb2.Buddy()
+        buddy = spb2.Buddy()
         buddy.userName = user
         buddy.buddyName = buddy_name
 
@@ -127,7 +127,7 @@ class Backend:
                           wm.TYPE_BUDDY_STOPPED_TYPING)
 
     def handle_authorization(self, user, buddy_name):
-        buddy = pb2.Buddy()
+        buddy = spb2.Buddy()
         buddy.userName = user
         buddy.buddyName = buddy_name
 
@@ -135,14 +135,14 @@ class Backend:
                           wm.TYPE_AUTH_REQUEST)
 
     def handle_connected(self, user):
-        d = pb2.Connected()
+        d = spb2.Connected()
         d.user = user
 
         self.send_wrapped(d.SerializeToString(),
                           wm.TYPE_CONNECTED)
 
     def handle_disconnected(self, user, error=0, message=''):
-        d = pb2.Disconnected()
+        d = spb2.Disconnected()
         d.user = user
         d.error = error
         d.message = message
@@ -153,7 +153,7 @@ class Backend:
     def handle_participant_changed(self, user, nickname, room, flags, status,
                                    status_message='', newname='',
                                    icon_hash=''):
-        d = pb2.Participant()
+        d = spb2.Participant()
         d.userName = user
         d.nickname = nickname
         d.room = room
@@ -167,7 +167,7 @@ class Backend:
                           wm.TYPE_PARTICIPANT_CHANGED)
 
     def handle_room_nickname_changed(self, user, r, nickname):
-        room = pb2.Room()
+        room = spb2.Room()
         room.userName = user
         room.nickname = nickname
         room.room = r
@@ -177,7 +177,7 @@ class Backend:
                           wm.TYPE_ROOM_NICKNAME_CHANGED)
 
     def handle_room_list(self, rooms):
-        room_list = pb2.RoomList()
+        room_list = spb2.RoomList()
 
         for room in rooms:
             room_list.room.append(room[0])
@@ -187,7 +187,7 @@ class Backend:
                           wm.TYPE_ROOM_LIST)
 
     def handle_ft_start(self, user, buddy_name, filename, size):
-        room = pb2.File()
+        room = spb2.File()
         room.userName = user
         room.buddyName = buddy_name
         room.fileName = filename
@@ -197,7 +197,7 @@ class Backend:
                           wm.TYPE_FT_START)
 
     def handle_ft_finish(self, user, buddy_name, filename, size, ft_id):
-        room = pb2.File()
+        room = spb2.File()
         room.userName = user
         room.buddyName = buddy_name
         room.fileName = filename
@@ -211,7 +211,7 @@ class Backend:
                           wm.TYPE_FT_FINISH)
 
     def handle_ft_data(self, ft_id, data):
-        d = pb2.FileTransferData()
+        d = spb2.FileTransferData()
         d.ftID = ft_id
         d.data = bytes(data)
 
@@ -224,7 +224,7 @@ class Backend:
                      a list of tuples of configuration key
                      and configuration value.
         """
-        c = pb2.BackendConfig()
+        c = spb2.BackendConfig()
         config = []
         for section, rest in data.items():
             config.append('[%s]' % section)
@@ -237,14 +237,14 @@ class Backend:
                           wm.TYPE_BACKEND_CONFIG)
 
     def handle_query(self, command):
-        c = pb2.BackendConfig()
+        c = spb2.BackendConfig()
         c.config = command
 
         self.send_wrapped(c.SerializeToString(),
                           wm.TYPE_QUERY)
 
     def handle_login_payload(self, data):
-        payload = pb2.Login()
+        payload = spb2.Login()
         payload.ParseFromString(data)
 
         self.handle_login_request(payload.user,
@@ -253,14 +253,14 @@ class Backend:
                                   payload.extraFields)
 
     def handle_logout_payload(self, data):
-        payload = pb2.Logout()
+        payload = spb2.Logout()
         payload.ParseFromString(data)
 
         self.handle_logout_request(payload.user,
                                    payload.legacyName)
 
     def handle_status_changed_payload(self, data):
-        payload = pb2.Status()
+        payload = spb2.Status()
         payload.ParseFromString(data)
 
         self.handle_status_change_request(payload.userName,
@@ -268,7 +268,7 @@ class Backend:
                                           payload.statusMessage)
 
     def handle_conv_message_payload(self, data):
-        payload = pb2.ConversationMessage()
+        payload = spb2.ConversationMessage()
         payload.ParseFromString(data)
 
         self.handle_message_send_request(payload.userName,
@@ -278,7 +278,7 @@ class Backend:
                                          payload.id)
 
     def handle_conv_message_ack_payload(self, data):
-        payload = pb2.ConversationMessage()
+        payload = spb2.ConversationMessage()
         payload.ParseFromString(data)
 
         self.handle_message_ack_request(payload.userName,
@@ -286,7 +286,7 @@ class Backend:
                                         payload.id)
 
     def handle_attention_payload(self, data):
-        payload = pb2.ConversationMessage()
+        payload = spb2.ConversationMessage()
         payload.ParseFromString(data)
 
         self.handle_attention_request(payload.userName,
@@ -294,7 +294,7 @@ class Backend:
                                       payload.message)
 
     def handle_ft_start_payload(self, data):
-        payload = pb2.File()
+        payload = spb2.File()
         payload.ParseFromString(data)
 
         self.handle_ft_start_request(payload.userName,
@@ -304,7 +304,7 @@ class Backend:
                                      payload.ftId)
 
     def handle_ft_finish_payload(self, data):
-        payload = pb2.File()
+        payload = spb2.File()
         payload.ParseFromString(data)
 
         self.handle_ft_finish_request(payload.userName,
@@ -314,19 +314,19 @@ class Backend:
                                       payload.ftId)
 
     def handle_ft_pause_payload(self, data):
-        payload = pb2.FileTransferData()
+        payload = spb2.FileTransferData()
         payload.ParseFromString(data)
 
         self.handle_ft_pause_request(payload.ftId)
 
     def handle_ft_continue_payload(self, data):
-        payload = pb2.FileTransferData()
+        payload = spb2.FileTransferData()
         payload.ParseFromString(data)
 
         self.handle_ft_continue_request(payload.ftId)
 
     def handle_join_room_payload(self, data):
-        payload = pb2.Room()
+        payload = spb2.Room()
         payload.ParseFromString(data)
 
         self.handle_join_room_request(payload.userName,
@@ -335,14 +335,14 @@ class Backend:
                                       payload.password)
 
     def handle_leave_room_payload(self, data):
-        payload = pb2.Room()
+        payload = spb2.Room()
         payload.ParseFromString(data)
 
         self.handle_leave_room_request(payload.userName,
                                        payload.room)
 
     def handle_vcard_payload(self, data):
-        payload = pb2.VCard()
+        payload = spb2.VCard()
         payload.ParseFromString(data)
 
         if payload.HasField('photo'):
@@ -354,7 +354,7 @@ class Backend:
                                       payload.id)
 
     def handle_buddy_changed_payload(self, data):
-        payload = pb2.Buddy()
+        payload = spb2.Buddy()
         payload.ParseFromString(data)
 
         if payload.HasField('blocked'):
@@ -368,7 +368,7 @@ class Backend:
                                               payload.alias, groups)
 
     def handle_buddy_removed_payload(self, data):
-        payload = pb2.Buddy()
+        payload = spb2.Buddy()
         payload.ParseFromString(data)
 
         groups = [g for g in payload.group]
@@ -377,13 +377,13 @@ class Backend:
                                           groups)
 
     def handle_buddies_payload(self, data):
-        payload = pb2.Buddies()
+        payload = spb2.Buddies()
         payload.ParseFromString(data)
 
         self.handle_buddies(payload)
 
     def handle_chat_state_payload(self, data, message_type):
-        payload = pb2.Buddy()
+        payload = spb2.Buddy()
         payload.ParseFromString(data)
 
         if message_type == wm.TYPE_BUDDY_TYPING:
@@ -494,7 +494,7 @@ class Backend:
         self.send_memory_usage()
 
     def send_memory_usage(self):
-        stats = pb2.Stats()
+        stats = spb2.Stats()
 
         stats.init_res = self._init_res
         res = 0
