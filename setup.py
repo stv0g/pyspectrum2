@@ -15,7 +15,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 readme = read_file(os.path.join(here, 'README.rst'))
 
 setup(name='pyspectrum2',
-      version='0.1.0',
+      version='0.2.0',
       description='pyspectrum2 implements the Protobuf-based interface to '
                   'Spectrum2 required for building Python-based backends',
       long_description=readme,
