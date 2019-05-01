@@ -38,12 +38,12 @@ class Backend:
         self.send_wrapped(m.SerializeToString(),
                           wm.TYPE_CONV_MESSAGE)
 
-    def handle_message_ack(self, user, legacy_name, identifier):
+    def handle_message_ack(self, user, legacy_name, mid):
         m = spb2.ConversationMessage()
         m.userName = user
         m.buddyName = legacy_name
         m.message = ''
-        m.id = identifier
+        m.id = mid
 
         self.send_wrapped(m.SerializeToString(),
                           wm.TYPE_CONV_MESSAGE_ACK)
@@ -537,35 +537,35 @@ class Backend:
         raise NotImplementedError()
 
     def handle_message_send_request(self, user, legacy_name, message,
-                                    xhtml='', identifier=0):
+                                    xhtml='', mid=0):
         """
         Called when XMPP user sends message to legacy network.
         @param user: XMPP JID of user for which this event occurs.
         @param legacy_name: Legacy network name of buddy or room.
         @param message: Plain text message.
         @param xhtml: XHTML message.
-        @param identifier: message ID
+        @param mid: message ID
         """
 
         raise NotImplementedError()
 
-    def handle_message_ack_request(self, user, legacy_name, identifier=0):
+    def handle_message_ack_request(self, user, legacy_name, mid=0):
         """
         Called when XMPP user sends message to legacy network.
         @param user: XMPP JID of user for which this event occurs.
         @param legacy_name: Legacy network name of buddy or room.
-        @param identifier: message ID
+        @param mid: message ID
         """
 
         # raise NotImplementedError()
         pass
 
-    def handle_vcard_request(self, user, legacy_name, identifier):
+    def handle_vcard_request(self, user, legacy_name, mid):
         """ Called when XMPP user requests VCard of buddy.
         @param user: XMPP JID of user for which this event occurs.
         @param legacy_name: Legacy network name of buddy
                             whose VCard is requested.
-        @param identifier: ID which is associated with this request.
+        @param mid: ID which is associated with this request.
                            You have to pass it to handle_vcard function
                            when you receive VCard.
         """
