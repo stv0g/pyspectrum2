@@ -5,25 +5,50 @@ import sys
 import os
 import logging
 import resource
+import asyncio
 
 from . import protocol_pb2 as spb2
 from .protocol_pb2 import WrapperMessage as wm
 from .config import Config
 
 
-class Backend:
+class Backend(asyncio.Protocol):
     """
     Creates new NetworkPlugin and connects the Spectrum2 NetworkPluginServer.
-    @param loop: Event loop.
     @param host: Host where Spectrum2 NetworkPluginServer runs.
     @param port: Port.
     """
 
-    def __init__(self):
+    def __init__(self, jid, config=None):
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        self.jid = jid
+
+        self.config = Config(config) if config else None
+
         self._ping_received = False
         self._data = bytes()
         self._init_res = 0
-        self.logger = logging.getLogger(self.__class__.__name__)
+
+    def connection_made(self, transport):
+        self.transport = transport
+        self.logger.debug("Connection established")
+
+    def connection_lost(self, exc):
+        self.transport = None
+        self.logger.debug("Connection lost")
+
+    @property
+    def connected(self):
+        return self.transport is not None
+
+    def data_received(self, data):
+        self.handle_data_read(data)
+
+    def data_send(self, data):
+        header = struct.pack('!I', len(data))
+
+        self.transport.write(header + data)
 
     def handle_message(self, user, legacy_name, message, nickname='', xhtml='',
                        timestamp=''):
@@ -57,12 +82,12 @@ class Backend:
         self.send_wrapped(m.SerializeToString(),
                           wm.TYPE_ATTENTION)
 
-    def handle_vcard(self, user, identifier, legacy_name, full_name,
+    def handle_vcard(self, user, mid, legacy_name, full_name,
                      nickname, photo):
         vcard = spb2.VCard()
         vcard.userName = user
         vcard.buddyName = legacy_name
-        vcard.id = identifier
+        vcard.id = mid
         vcard.fullname = full_name
         vcard.nickname = nickname
         vcard.photo = bytes(photo)
@@ -225,6 +250,7 @@ class Backend:
                      a list of tuples of configuration key
                      and configuration value.
         """
+
         c = spb2.BackendConfig()
         config = []
         for section, rest in data.items():
@@ -475,19 +501,14 @@ class Backend:
         wrap.type = typ
         wrap.payload = bytes(message)
 
-        self.send(wrap.SerializeToString())
-
-    def check_ping(self):
-        if self._ping_received is False:
-            self.handle_exit_request()
-        self._ping_received = False
+        self.data_send(wrap.SerializeToString())
 
     def send_pong(self):
         self._ping_received = True
         wrap = wm()
         wrap.type = wm.TYPE_PONG
         message = wrap.SerializeToString()
-        self.send(message)
+        self.data_send(message)
         self.send_memory_usage()
 
     def send_memory_usage(self):
