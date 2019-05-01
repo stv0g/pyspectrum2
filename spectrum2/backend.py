@@ -28,7 +28,7 @@ class Backend:
                        timestamp=''):
         m = pb2.ConversationMessage()
         m.userName = user
-        m.buddy_name = legacy_name
+        m.buddyName = legacy_name
         m.message = message
         m.nickname = nickname
         m.xhtml = xhtml
@@ -491,7 +491,7 @@ class Backend:
         wrap.type = wm.TYPE_PONG
         message = wrap.SerializeToString()
         self.send(message)
-        self.sendMemoryUsage()
+        self.send_memory_usage()
 
     def send_memory_usage(self):
         stats = pb2.Stats()
