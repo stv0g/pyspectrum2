@@ -20,15 +20,15 @@ class Config:
                                     to the configuration file.
         """
         self.config_path = path_to_config_file
-        self.options = self.load_config(self.config_path)
+        self.options = self.load(self.config_path)
 
         # Load backend_logging information
         if 'logging.backend_config' in self.options:
             if os.path.isfile(self['logging.backend_config']):
-                config = self.load_config(self['logging.backend_config'])
+                config = self.load(self['logging.backend_config'])
                 self.options.update(config)
 
-    def load_config(self, file_name):
+    def load(self, file_name):
         # Current section heading,
         # It's a dictionary because variables in python closures can't be
         # assigned to.
