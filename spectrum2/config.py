@@ -150,7 +150,7 @@ class Config:
         return self.options[key] if key in self.options else None
 
     def __contains__(self, key):
-        return key in options
+        return key in self.options
 
 
 class ConfigParseError(Exception):

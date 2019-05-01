@@ -414,7 +414,7 @@ class Backend:
             wrapper = wm()
             try:
                 wrapper.ParseFromString(packet)
-            except:
+            except Exception:
                 self._data = self._data[expected_size+4:]
                 self.logger.error('Parse from String exception. '
                                   'Skipping packet.')
@@ -459,7 +459,7 @@ class Backend:
             elif wrapper.type == wm.TYPE_RAW_XML:
                 self.handle_raw_xml_request(wrapper.payload)
             elif wrapper.type == wm.TYPE_BUDDIES:
-                    self.handle_buddies_payload(wrapper.payload)
+                self.handle_buddies_payload(wrapper.payload)
             elif wrapper.type == wm.TYPE_BUDDY_TYPING:
                 self.handle_chat_state_payload(wrapper.payload,
                                                wm.TYPE_BUDDY_TYPING)
