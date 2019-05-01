@@ -21,7 +21,7 @@ setup(name='pyspectrum2',
     url='https://github.com/SpectrumIM/spectrum2',
     author='Steffen Vogel',
     author_email='post@steffenvogel.de',
-    python_requires='>=3.5',
+    python_requires='>=3.0',
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Development Status :: 4 - Beta',

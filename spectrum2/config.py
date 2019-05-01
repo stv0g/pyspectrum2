@@ -12,6 +12,7 @@ class Config:
     <section> ::= [<identifier>*]
     <assignment> ::= <identifier> <space>* = <space>* <value>
     """
+
     def __init__(self, path_to_config_file):
         """
         Initialises configuration file.
@@ -32,7 +33,7 @@ class Config:
         # Current section heading,
         # It's a dictionary because variables in python closures can't be
         # assigned to.
-        section = {'a': ''}
+        section = ''
         options = dict()
 
         # Recursive descent parser
@@ -86,14 +87,23 @@ class Config:
             return (key, value, '\n')
 
         def expr(line):
+            nonlocal section
+
             sec, newline = parse_section(line)
             if sec is not None:
-                section['a'] = sec
+                section = sec
             else:
                 key, value, newline = parse_assignment(line)
                 if key is not None:
-                    if section['a'] != '':
-                        options[section['a'] + '.' + key] = value
+                    if value in ('yes', 'true'):
+                        value = True
+                    elif value in ('no', 'false'):
+                        value = False
+                    elif value.isdigit():
+                        value = int(value)
+
+                    if section != '':
+                        options[section + '.' + key] = value
                     else:
                         options[key] = value
                 else:
@@ -133,6 +143,7 @@ class Config:
                     break
                 parse_line(strip_comments(line), i)
                 i += 1
+
         return options
 
     def __getitem__(self, key):
