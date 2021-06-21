@@ -37,5 +37,5 @@ setup(name='pyspectrum2',
           'spectrum2'
       ],
       install_requires=[
-          'protobuf',
+          'protobuf~=3.17.0',
       ])
